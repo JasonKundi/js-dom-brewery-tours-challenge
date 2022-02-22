@@ -1,3 +1,5 @@
+const validTypes = ["micro", "brewpub", "regional"];
+
 const state = {
   breweries: [],
 };
@@ -8,18 +10,24 @@ function clear() {
 }
 
 function render() {
-  clear()
+  clear();
   listenToSelectStateForm();
   renderBreweryList();
 }
 
+function setBreweries() {
+  state.breweries = breweries.filter(function (brewery) {
+    return validTypes.includes(brewery.brewery_type);
+  });
+}
+
 const form1 = document.querySelector("#select-state-form");
 const formInputEl = document.querySelector("#select-state");
-const formInputValue = formInputEl.value;
 
 function listenToSelectStateForm() {
   form1.addEventListener("submit", function (event) {
     event.preventDefault();
+    const formInputValue = formInputEl.value;
     const url = "https://api.openbrewerydb.org/breweries?by_state=";
 
     fetch(url + formInputValue)
@@ -35,44 +43,27 @@ function listenToSelectStateForm() {
   });
 }
 
-const formFilter = document.querySelector("#filter-by-type-form")
-const filterInputValue = document.querySelector("#filter-by-type")
-
-function checkBreweryType(brewery) {
-  for (const brewery of state.breweries) {
-    if (brewery.brewery_type == "Micro") {
-      return true
-    }
-    if (brewery.brewery_type == "Regional") {
-      return true
-    }
-    if (brewery.brewery_type == "Brewpub") {
-      return true
-    }
-  }
-  
-}
+const formFilter = document.querySelector("#filter-by-type-form");
+const filterInputValue = document.querySelector("#filter-by-type");
 
 function listenToFilterByTypeForm() {
-  formFilter.addEventListener("change", function(event) {
+  formFilter.addEventListener("change", function (event) {
     event.preventDefault();
 
-    const filterInputValue = checkBreweryType(brewery);
-    const urlByType = `${formInputValue}&by_type=`;
-    
+    const filterInputValue = state.brewery_type;
+    const urlByType = `${url} + ${formInputValue}&by_type=`;
+
     fetch(urlByType + filterInputValue)
       .then(function (response) {
         console.log("raw response", response);
         return response.json();
       })
       .then(function (breweries) {
-        state.breweries = breweries;
+        setBreweries(breweries);
         console.log(breweries);
       });
     render();
   });
-
-
 }
 
 const ulEl = document.querySelector("#breweries-list");
@@ -109,11 +100,21 @@ function renderBreweryList() {
     const aTag = document.createElement("a");
     aTag.innerText = brewery.website_url;
 
-    liEl.append(h2El, divEl, sectionEl, h3El, pEl, pEl2, sectionEl2, h3El2, pEl3, sectionEl3, aTag);
+    liEl.append(
+      h2El,
+      divEl,
+      sectionEl,
+      h3El,
+      pEl,
+      pEl2,
+      sectionEl2,
+      h3El2,
+      pEl3,
+      sectionEl3,
+      aTag
+    );
     ulEl.append(liEl);
-
   }
-  
 }
 
 render();
